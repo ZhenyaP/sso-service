@@ -1,0 +1,82 @@
+version: '3.5'
+
+services:
+  nginx-idp:  
+    image: nginx-idp
+    container_name: nginx-idp
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    volumes:
+      - secrets:/run/secrets:ro
+    ports:
+    - "81:80"
+    - "443:443"
+    entrypoint: /tmp/run_nginx.sh
+    depends_on:
+      - "idp-SecretManager"
+    networks:
+      - idp_proxy_net
+  nginx-newrelic:
+    image: nginx-newrelic
+    container_name: nginx-newrelic
+    build:
+      context: ./nginx-newrelic
+      dockerfile: Dockerfile
+    environment:
+      - NEWRELIC_APP=nginx-idp
+      - NGINX_STATUS_URL=https://nginx-idp/nginx_status
+    networks:
+      - idp_proxy_net
+    entrypoint: /opt/start.sh
+    depends_on:
+      - "nginx-idp"
+  #nginx-newrelic-test:
+  #  image: nginx-newrelic
+  #  container_name: nginx-newrelic
+  #  build:
+  #    context: ./nginx-newrelic
+  #    dockerfile: Dockerfile
+  #  env_file:
+  #    - nginx-newrelic-env-variables.env
+  #  entrypoint: /opt/start.sh
+  idp-api:
+    image: idp-api
+    build:
+      context: .
+      dockerfile: IdentityProvider.API/Dockerfile
+    entrypoint: /src/IdentityProvider.API/run_api.sh
+    expose:
+      - "5000"  
+    environment:
+      - ASPNETCORE_URLS=http://+:5000
+      - ASPNETCORE_ENVIRONMENT=QA
+    volumes:
+      - secrets:/run/secrets:ro
+    networks:
+      - idp_proxy_net
+  idp-secretmanager:
+    image: idp-secretmanager
+    container_name: idp-secretmanager
+    build:
+      context: .
+      dockerfile: IdentityProvider.SecretManager/Dockerfile
+    entrypoint: bash -c "dotnet IdentityProvider.SecretManager.dll; tail -f /dev/null"
+    expose:
+      - "5000"
+    environment:
+      - ASPNETCORE_URLS=http://+:5000
+      - ASPNETCORE_ENVIRONMENT=QA
+    volumes:
+      - secrets:/run/secrets:rw
+    networks:
+      - idp_proxy_net
+volumes:
+  secrets:
+networks:
+  idp_proxy_net:
+    name: idp_net
+    ipam:
+       driver: default
+       config:
+          - subnet: <CIDR>

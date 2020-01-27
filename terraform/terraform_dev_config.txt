@@ -1,0 +1,63 @@
+region = "us-east-1"
+profile = "terraform"
+
+#key_name = "admin"
+key_name = ""
+app_name = "IdentityProvider"
+app_version = "1.0"
+
+cognito_lambda_role = ""
+identity_task_count = 4
+idp_asg_min_size = 4
+idp_asg_max_size = 4
+idp_test_asg_min_size = 1
+idp_test_asg_max_size = 1
+idp_nginx_name = "nginx-idp"
+idp_api_name = "identityprovider_idp-api"
+idp_cert_name = "idp-certmanager"
+idp_docker_name = "idp-docker"
+idp_nginx_newrelic_name = "nginx-newrelic"
+idp_nginx_newrelic_app_name = "idp-nginx-newrelic-qa"
+coreclr_profiler = "{36032161-FFC0-4B61-B559-F6C5D41BAE5A}"
+coreclr_newrelic_home = "/usr/local/newrelic-netcore20-agent"
+coreclr_profiler_path = "/usr/local/newrelic-netcore20-agent/libNewRelicProfiler.so"
+idp_api_newrelic_app_name = "idp-api-newrelic-qa"
+
+subnet_elb_1  = "subnet-0a199d7c"
+subnet_elb_2  = "subnet-16f8264e"
+subnet_asg_1  = "subnet-ff199d89"
+subnet_asg_2  = "subnet-13f8264b"
+vpc_id        = "vpc-eb50028f"
+idp_route53_zone_id = "Z25T1JQL039PYH"
+
+domain_name = "identity-provider.awsqa.net"
+elb_name            = "IDP-ELB-new"
+lb_target_group_name = "IDP-ELB-TG-new"
+autoscaling_group_name = "IDPIdentity-ASG-new"
+test_autoscaling_group_name = "IDP-Test_ASG"
+cluster_name        = "IDP-cluster-new"
+service_name        = "IDP-new"
+iam_instance_profile = "Profile"
+iam_test_instance_profile = "jenkinsslave"
+iam_role            = "arn:aws:iam::12345:role/aws-service-role/ecs.amazonaws.com/AWSServiceRoleForECS"
+elb_security_group = ["sg-122345", "sg-5555"]
+ec2_security_group = ["sg-5545667788"]
+
+idp_nginx_repository_url	=    "%s.dkr.ecr.%s.amazonaws.com/identity-provider/nginx-idp:%s"
+idp_api_repository_url	=    "%s.dkr.ecr.%s.amazonaws.com/identity-provider/idp-api:%s"
+idp_cert_repository_url	=    "%s.dkr.ecr.%s.amazonaws.com/identity-provider/idp-certmanager:%s"
+idp_docker_repository_url	=    "%s.dkr.ecr.%s.amazonaws.com/identity-provider/idp-docker:%s"
+idp_nginx_newrelic_repository_url = "%s.dkr.ecr.%s.amazonaws.com/identity-provider/nginx-newrelic:%s"
+
+cognito_user_pool_id = "aaa"
+cognito_user_pool_arn = "arn:aws:cognito-idp:us-east-1:34567:userpool/hhh"
+
+#Tags
+Tag_App = {
+  "MainApplication" = "Identity Provider"
+  "Application"     = "identity"
+  "AppOwner"        = "Yauheniy Piatrovich"
+  "RequestedBy"     = "Yauheniy Piatrovich"
+  "CreatedBy"       = "Yauheniy Piatrovich"
+  "CreationMethod"  = "Jenkins Terraform"
+}

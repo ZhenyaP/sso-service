@@ -1,0 +1,10 @@
+version: '3.5'
+
+services:
+  -idp-terraform:  
+    image: -idp-terraform
+    container_name: -idp-terraform
+    build:
+      context: .
+      dockerfile: Dockerfile    
+    entrypoint: /terraform/deploy_manual.sh
