@@ -1,5 +1,5 @@
-# Identity Provider (IdP)
-The Identity Provider (IdP) with API that authenticates users/authorizes clients and returns various tokens. 
+# Financial-grade Identity Hub & Provider (FIdHP)
+The Financial-grade Identity Hub & Provider (FIdHP) with API that authenticates users/authorizes clients and returns various tokens. 
 This way this IdP federates multiple service providers (SaaS apps) and can act as the key part of the whole FIdM 
 (Federated Identity Management) mechanism at any company. \
 It is an extremely secure, rugged and highly available microservice with Multi-AZ deployment for AWS, decent level of redundancy 
