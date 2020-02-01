@@ -4,6 +4,8 @@
 //  </summary>
 //  --------------------------------------------------------------------------------------------------------------------
 
+using IdentityProvider.SecretManager.Entities.AWS;
+
 namespace IdentityProvider.SecretManager.Entities
 {
     /// <summary>
@@ -12,10 +14,10 @@ namespace IdentityProvider.SecretManager.Entities
     public class CaCert
     {
         /// <summary>
-        /// Gets or sets the PCA CA Cert ARN.
+        /// Gets or sets the CA Cert configuration for AWS.
         /// </summary>
-        /// <value>The PCA CA Cert ARN.</value>
-        public string Arn { get; set; }
+        /// <value>The CA Cert configuration for AWS.</value>
+        public CaCertAWSConfig AWSConfig { get; set; }
 
         /// <summary>
         /// Gets or sets the CA Cert Destination File Name (in Docker volume).

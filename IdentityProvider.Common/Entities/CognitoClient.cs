@@ -1,15 +1,15 @@
 ﻿//  --------------------------------------------------------------------------------------------------------------------
 //  <summary>
-//    Defines the CognitoClientSecretData type.
+//    Defines the CognitoClient type.
 //  </summary>
 //  --------------------------------------------------------------------------------------------------------------------
 
 namespace IdentityProvider.Common.Entities
 {
     /// <summary>
-    /// The Cognito Client Secret Data.
+    /// The Cognito Client.
     /// </summary>
-    public class CognitoClientSecretData
+    public class CognitoClient
     {
         /// <summary>
         /// Gets or sets the client identifier.

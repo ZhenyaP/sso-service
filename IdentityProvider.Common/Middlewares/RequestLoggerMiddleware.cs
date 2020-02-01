@@ -4,11 +4,13 @@
 //  </summary>
 //  --------------------------------------------------------------------------------------------------------------------
 
+using Microsoft.Extensions.Logging;
+
 namespace IdentityProvider.Common.Middlewares
 {
     using System;
     using System.Diagnostics;
-    using System.Linq; 
+    using System.Linq;
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Http;
@@ -31,11 +33,6 @@ RequestHeaders = {RequestHeaders};
 RequestHost = {RequestHost}; 
 RequestProtocol = {RequestProtocol}; 
 RequestForm = {RequestForm}";
-
-        /// <summary>
-        /// The log
-        /// </summary>
-        private static readonly ILogger Log = Serilog.Log.ForContext<RequestLoggerMiddleware>();
 
         /// <summary>
         /// The next middleware

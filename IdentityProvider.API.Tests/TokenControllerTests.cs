@@ -2,7 +2,9 @@ using System.Linq;
 using System.Net.Http;
 using Amazon.CognitoIdentityProvider;
 using IdentityProvider.Common.Helpers;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace IdentityProvider.API.Tests
 {
@@ -24,14 +26,18 @@ namespace IdentityProvider.API.Tests
         private const string username = "Eugene";
 
         /// <summary>
-        /// Verifies the token/Session ID returned by the GetTokenWithSessionId action method from the TokenController.
+        /// Verifies the token/Session ID returned by the GetTokenWithSessionId
+        /// action method from the TokenController.
+        /// This test method violates main best practices of writing Unit Tests
+        /// just for boosting the "unit" test performance.
+        /// One more point: indeed, this is the Pseudo-Unit Test, as we are
+        /// testing here the AWS Cognito Token obtained from External Service
+        /// (AWS Cognito User Pool service). That's why it is more correct to
+        /// call it an integration test.
         /// </summary>
         [Fact]
-        //public async Task GetTokenWithSessionId_VerifyTokenAndSessionId()
         public async Task GetTokenWithSessionId_VerifyTokenAndSessionId()
         {
-            //Assert.False(false);
-
             var configSettings = Options.Create(GetTestConfigSettings());
             var httpClient = new HttpClient
             {
@@ -44,15 +50,16 @@ namespace IdentityProvider.API.Tests
             var jwtTokenHelper = new JwtTokenHelper(configSettings, httpClient);
 
             var client = configSettings.Value.Clients.First();
-            var cognitoClientSecretData = new CognitoClientSecretData
+            var cognitoClientSecretData = new CognitoClient
             {
-                ClientId = client.Cognito.ClientId,
-                UserPoolId = client.Cognito.UserPoolId
+                ClientId = client.Cognito.ClientApp.ClientId,
+                UserPoolId = client.Cognito.ClientApp.UserPoolId
             };
             MockingHelper.SetFieldValue(awsCognitoClientSecretHelper, "_cognitoClientSecretDataArr", new[] { cognitoClientSecretData });
             cognitoClientSecretData.ClientSecret = await awsCognitoHelper.GetClientSecretForAppClientAsync(cognitoClientSecretData);
-
+            var logger = Mock.Of<ILogger<TokenController>>();
             var controller = new TokenController(configSettings,
+                logger,
                 awsCognitoHelper,
                 awsCognitoClientSecretHelper,
                 fireBaseHelper,
@@ -64,7 +71,7 @@ namespace IdentityProvider.API.Tests
                     ExtraClientData = new ExtraClientData()
                 }
             };
-            controller.CurrentClient.ConfigClientData.Cognito.ClientSecret = cognitoClientSecretData.ClientSecret;
+            controller.CurrentClient.ConfigClientData.Cognito.ClientApp.ClientSecret = cognitoClientSecretData.ClientSecret;
             await TestIdToken(true, controller, jwtTokenHelper).ConfigureAwait(false);
         }
 
@@ -72,6 +79,7 @@ namespace IdentityProvider.API.Tests
             TokenController controller,
             JwtTokenHelper jwtTokenHelper)
         {
+            controller.CurrentClient.ExtraClientData.UserName = username;
             if (!isCognito)
             {
                 controller.CurrentClient.ExtraClientData.SessionId = Guid.NewGuid().ToString();
@@ -80,8 +88,8 @@ namespace IdentityProvider.API.Tests
                 controller.CurrentClient.ExtraClientData.CustomJwtTokenIssuer = "https://identity-provider.awsqa.net";
             }
             var tokenWithSessionId = isCognito ?
-                await controller.GetCognitoIdTokenWithSessionId(username).ConfigureAwait(false) :
-                controller.GetManualRsaTokenWithSessionId(username);
+                await controller.GetCognitoIdTokenWithSessionId() :
+                controller.GetManualRsaTokenWithSessionId();
 
             Assert.NotNull(tokenWithSessionId);
             Assert.NotNull(tokenWithSessionId.Content);
@@ -124,10 +132,13 @@ namespace IdentityProvider.API.Tests
                 Cognito = new Cognito
                 {
                     ClientCredentialsAuthScope = "scope",
-                    ClientId = "id",
+                    ClientApp = new CognitoClient
+                    {
+                        ClientId = "id",
+                        UserPoolId = "pool-id"
+                    },
                     TokenIssuer = "https://cognito-idp.us-east-1.amazonaws.com/pool-id",
-                    TokenUrl = "https://server-domain.auth.us-east-1.amazoncognito.com/oauth2/token",
-                    UserPoolId = "pool-id"
+                    TokenUrl = "https://server-domain.auth.us-east-1.amazoncognito.com/oauth2/token"
                 }
             };
         }

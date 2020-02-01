@@ -4,6 +4,8 @@
 //  </summary>
 //  --------------------------------------------------------------------------------------------------------------------
 
+using IdentityProvider.SecretManager.Entities.AWS;
+
 namespace IdentityProvider.SecretManager.Entities
 {
     /// <summary>
@@ -15,13 +17,13 @@ namespace IdentityProvider.SecretManager.Entities
         /// Gets or sets the Root CA CRL.
         /// </summary>
         /// <value>The Root CA CRL.</value>
-        public CrlData RootCa { get; set; }
+        public CrlAWSConfig RootCaCrlAWSConfig { get; set; }
 
         /// <summary>
         /// Gets or sets the Intermediate CA CRL.
         /// </summary>
         /// <value>The Intermediate CA CRL.</value>
-        public CrlData IntermediateCa { get; set; }
+        public CrlAWSConfig IntermediateCaCrlAWSConfig { get; set; }
 
         /// <summary>
         /// Gets or sets the destination file name (in Docker Secrets volume).

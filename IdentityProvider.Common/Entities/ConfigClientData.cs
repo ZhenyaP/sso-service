@@ -4,16 +4,21 @@
 //  </summary>
 //  --------------------------------------------------------------------------------------------------------------------
 
-using System.Collections.Generic;
-using System.Security.Claims;
-
 namespace IdentityProvider.Common.Entities
 {
     /// <summary>
     /// The Configuration Client Data.
     /// </summary>
     public class ConfigClientData
-    {        
+    {
+        /// <summary>
+        /// Gets or sets the Identity Provider.
+        /// </summary>
+        /// <value>The Identity Provider.</value>
+        public Enums.IdentityProvider IdentityProvider { get; set; }
+
+        public Enums.DigitalSignatureAlgorithm DigitalSignatureAlgorithm { get; set; }
+
         /// <summary>
         /// The SSL Client Certificate.
         /// </summary>

@@ -1,26 +1,26 @@
 ﻿//  --------------------------------------------------------------------------------------------------------------------
 //  <summary>
-//    Defines the CrlData type.
+//    Defines the Passphrase type.
 //  </summary>
 //  --------------------------------------------------------------------------------------------------------------------
 
 namespace IdentityProvider.SecretManager.Entities
 {
     /// <summary>
-    /// Class CrlData
+    /// Class SecretData
     /// </summary>
-    public class CrlData
+    public class AWSSecretData
     {
         /// <summary>
-        /// Gets or sets the AWS S3 Bucket Name.
+        /// Gets or sets the Secret Name.
         /// </summary>
-        /// <value>The AWS S3 Bucket Name.</value>
-        public string BucketName { get; set; }
+        /// <value>The Secret Name.</value>
+        public string SecretName { get; set; }
 
         /// <summary>
-        /// Gets or sets the AWS S3 Bucket Key.
+        /// Gets or sets the Secret Key.
         /// </summary>
-        /// <value>The AWS S3 Bucket Key.</value>
-        public string Key { get; set; }
+        /// <value>The Secret Key.</value>
+        public string SecretKey { get; set; }
     }
 }

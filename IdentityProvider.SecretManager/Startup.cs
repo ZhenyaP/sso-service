@@ -19,7 +19,9 @@ using IdentityProvider.SecretManager.Entities;
 using IdentityProvider.Common;
 using IdentityProvider.Common.Helpers;
 using IdentityProvider.Common.Middlewares;
+using IdentityProvider.SecretManager.Entities.AWS;
 using IdentityProvider.SecretManager.Helpers;
+using IdentityProvider.SecretManager.Helpers.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -47,6 +49,129 @@ namespace IdentityProvider.SecretManager
         /// </summary>
         public IConfiguration Configuration { get; }
 
+        #region Private
+
+        private IConfigurationSection ConfigSettingsSection => this.Configuration.GetSection(nameof(ConfigSettings));
+
+        private RegionEndpoint GetRegionEndpoint()
+        {
+            var aws = new AWS();
+            var awsSection = this.Configuration.GetSection(nameof(AWS));
+            awsSection.Bind(aws);
+            var regionEndpoint = RegionEndpoint.GetBySystemName(aws.Region);
+
+            return regionEndpoint;
+        }
+
+        private void AddS3Service(IServiceCollection services,
+            RegionEndpoint regionEndpoint,
+            Credentials credentials)
+        {
+            services.AddSingleton<IAmazonS3>(
+                p =>
+                {
+                    var config = new AmazonS3Config
+                    {
+                        RegionEndpoint = regionEndpoint
+                    };
+                    return credentials == null
+                        ? new AmazonS3Client(config) :
+                        new AmazonS3Client(credentials, config);
+                });
+        }
+
+        private ConfigSettings GetConfigSettings()
+        {
+            var configSettings = new ConfigSettings();
+            ConfigSettingsSection.Bind(configSettings);
+
+            return configSettings;
+        }
+
+        private string GetSecretsManagerServiceUrl(IServiceCollection services)
+        {
+            var serviceUrl = new UriBuilder(Uri.UriSchemeHttps,
+                GetConfigSettings().ExtraAWSConfig.SecretsManagerVpceDnsName).Uri.AbsoluteUri;
+
+            return serviceUrl;
+        }
+
+        private void AddSecretManagerService(IServiceCollection services,
+            RegionEndpoint regionEndpoint,
+            Credentials credentials)
+        {
+            services.AddSingleton<IAmazonSecretsManager>(
+                p =>
+                {
+                    var config = new AmazonSecretsManagerConfig
+                    {
+                        ServiceURL = GetSecretsManagerServiceUrl(services),
+                        RegionEndpoint = regionEndpoint
+                    };
+                    return credentials == null
+                        ? new AmazonSecretsManagerClient(config) :
+                    new AmazonSecretsManagerClient(
+                        credentials,
+                        config);
+                });
+        }
+
+        private void AddACMPCAService(IServiceCollection services,
+            RegionEndpoint regionEndpoint,
+            Credentials credentials)
+        {
+            services.AddSingleton<IAmazonACMPCA>(
+                p =>
+                {
+                    var config = new AmazonACMPCAConfig
+                    {
+                        RegionEndpoint = regionEndpoint
+                    };
+                    return credentials == null ?
+                        new AmazonACMPCAClient(config) :
+                        new AmazonACMPCAClient(credentials, config);
+                });
+        }
+
+        private void AddCognitoIdentityProviderService(IServiceCollection services,
+            RegionEndpoint regionEndpoint,
+            Credentials credentials)
+        {
+            services.AddSingleton<IAmazonCognitoIdentityProvider>(
+                p =>
+                {
+                    var config = new AmazonCognitoIdentityProviderConfig
+                    {
+                        RegionEndpoint = regionEndpoint
+                    };
+                    return credentials == null ?
+                    new AmazonCognitoIdentityProviderClient(config) :
+                    new AmazonCognitoIdentityProviderClient(
+                        credentials, config);
+                });
+        }
+
+        private Credentials GetCredentials()
+        {
+            Credentials credentials = null;
+            if (File.Exists(CommonConstants.AwsKeysFileName))
+            {
+                var awsKeysData = File.ReadAllLines(CommonConstants.AwsKeysFileName);
+                var accessKeyId = awsKeysData[0];
+                var secretAccessKey = awsKeysData[1];
+                var sessionToken = awsKeysData[2];
+                credentials = new Credentials(
+                    accessKeyId,
+                    secretAccessKey,
+                    sessionToken,
+                    DateTime.UtcNow.AddDays(1));
+            }
+
+            return credentials;
+        }
+
+        #endregion
+
         /// <summary>
         /// This method gets called by the runtime.
         /// This method is used to add services to the container.
@@ -57,90 +182,23 @@ namespace IdentityProvider.SecretManager
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Latest);
             services.AddOptions();
-            var configSettingsSection = this.Configuration.GetSection(nameof(ConfigSettings));
-            services.Configure<ConfigSettings>(configSettingsSection);
-            if (File.Exists(CommonConstants.AwsKeysFileName))
-            {
-                var awsKeysData = File.ReadAllLines(CommonConstants.AwsKeysFileName);
-                var accessKeyId = awsKeysData[0];
-                var secretAccessKey = awsKeysData[1];
-                var sessionToken = awsKeysData[2];
+            services.Configure<ConfigSettings>(ConfigSettingsSection);
 
-                services.AddSingleton<IAmazonS3>(
-                    p => new AmazonS3Client(
-                        new Credentials(
-                            accessKeyId,
-                            secretAccessKey,
-                            sessionToken,
-                            DateTime.UtcNow.AddDays(1)),
-                        new AmazonS3Config
-                        {
-                            RegionEndpoint = RegionEndpoint.USEast1
-                        }));
-                services.AddSingleton<IAmazonSecretsManager>(
-                    p => new AmazonSecretsManagerClient(
-                        new Credentials(
-                            accessKeyId,
-                            secretAccessKey,
-                            sessionToken,
-                            DateTime.UtcNow.AddDays(1)),
-                        new AmazonSecretsManagerConfig
-                        {
-                            RegionEndpoint = RegionEndpoint.USEast1
-                        }));
-                services.AddSingleton<IAmazonCertificateManager>(
-                    p => new AmazonCertificateManagerClient(
-                        new Credentials(
-                            accessKeyId,
-                            secretAccessKey,
-                            sessionToken,
-                            DateTime.UtcNow.AddDays(1)),
-                        new AmazonCertificateManagerConfig
-                        {
-                            RegionEndpoint = RegionEndpoint.USEast1
-                        }));
-                services.AddSingleton<IAmazonACMPCA>(
-                    p => new AmazonACMPCAClient(
-                        new Credentials(
-                            accessKeyId,
-                            secretAccessKey,
-                            sessionToken,
-                            DateTime.UtcNow.AddDays(1)),
-                        new AmazonACMPCAConfig
-                        {
-                            RegionEndpoint = RegionEndpoint.USEast1
-                        }));
-                services.AddSingleton<IAmazonCognitoIdentityProvider>(
-                    p =>
-                    {
-                        var client = new AmazonCognitoIdentityProviderClient(
-                            new Credentials(
-                                accessKeyId,
-                                secretAccessKey,
-                                sessionToken,
-                                DateTime.UtcNow.AddDays(1)),
-                            new AmazonCognitoIdentityProviderConfig
-                            {
-                                RegionEndpoint = RegionEndpoint.USEast1
-                            });
-                        return client;
-                    });
-            }
-            else
+            var configSettings = GetConfigSettings();
+            if (configSettings.SecretProvider == SecretProvider.AWS)
             {
-                services.AddAWSService<IAmazonS3>();
-                var configSettings = new ConfigSettings();
-                configSettingsSection.Bind(configSettings);
-                var serviceUrl = new UriBuilder(Uri.UriSchemeHttps, configSettings.SecretsManagerVpceDnsName).Uri.AbsoluteUri;
-                services.AddSingleton<IAmazonSecretsManager>(p =>
-                    new AmazonSecretsManagerClient(new AmazonSecretsManagerConfig
-                    {
-                        ServiceURL = serviceUrl,
-                        RegionEndpoint = RegionEndpoint.USEast1
-                    }));
-                services.AddAWSService<IAmazonCertificateManager>();
-                services.AddAWSService<IAmazonACMPCA>();
-                services.AddAWSService<IAmazonCognitoIdentityProvider>();
+                var credentials = GetCredentials();
+                var regionEndpoint = GetRegionEndpoint();
+
+                AddS3Service(services, regionEndpoint, credentials);
+                AddSecretManagerService(services, regionEndpoint, credentials);
+                AddACMPCAService(services, regionEndpoint, credentials);
+                AddCognitoIdentityProviderService(services, regionEndpoint, credentials);
+
+                services.AddTransient<AWSCognitoHelper, AWSCognitoHelper>();
+                services.AddTransient<AWSS3BucketHelper, AWSS3BucketHelper>();
+                services.AddTransient<AWSSecretsManagerHelper, AWSSecretsManagerHelper>();
+                services.AddTransient<ISecretHelper, AWSSecretHelper>();
             }
 
             services.AddSingleton(p => new HttpClient(new SocketsHttpHandler
@@ -148,9 +206,7 @@ namespace IdentityProvider.SecretManager
                 MaxConnectionsPerServer = 100,
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
             }));
-            services.AddTransient<AWSCognitoHelper, AWSCognitoHelper>();
-            services.AddTransient<AWSS3BucketHelper, AWSS3BucketHelper>();
-            services.AddTransient<AWSSecretsManagerHelper, AWSSecretsManagerHelper>();
+
             return services.BuildServiceProvider(true);
         }
 

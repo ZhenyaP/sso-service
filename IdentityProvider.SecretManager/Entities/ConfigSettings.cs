@@ -4,7 +4,7 @@
 //  </summary>
 //  --------------------------------------------------------------------------------------------------------------------
 
-using IdentityProvider.Common.Entities;
+using IdentityProvider.SecretManager.Entities.AWS;
 
 namespace IdentityProvider.SecretManager.Entities
 {
@@ -13,6 +13,12 @@ namespace IdentityProvider.SecretManager.Entities
     /// </summary>
     public class ConfigSettings
     {
+        /// <summary>
+        /// Gets or sets the Secret Provider.
+        /// </summary>
+        /// <value>The Secret Provider.</value>
+        public SecretProvider SecretProvider { get; set; }
+        
         /// <summary>
         /// Gets or sets the PCA CA Cert.
         /// </summary>
@@ -38,27 +44,15 @@ namespace IdentityProvider.SecretManager.Entities
         public string SecretsDockerFolderPath { get; set; }
 
         /// <summary>
-        /// Gets or sets the Cognito clients.
+        /// Gets or sets the Extra AWS Config.
         /// </summary>
-        /// <value>The Cognito clients.</value>
-        public CognitoClientSecretData[] CognitoClients { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Destination Cognito Secrets File Name.
-        /// </summary>
-        /// <value>The Destination Cognito Secrets File Name.</value>
-        public string CognitoSecretsFileName { get; set; }
+        /// <value>The Extra AWS Config.</value>
+        public ExtraAWSConfig ExtraAWSConfig { get; set; }
 
         /// <summary>
         /// Gets or sets the RsaKeyData File Name.
         /// </summary>
         /// <value>The Destination RsaKeyData File Name.</value>
         public string RsaKeyDataFileName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the VPC endpoint-specific DNS hostname for AWS Secrets Manager service.
-        /// </summary>
-        /// <value>The VPC endpoint-specific DNS hostname for AWS Secrets Manager service.</value>
-        public string SecretsManagerVpceDnsName { get; set; }
     }
 }

@@ -164,6 +164,7 @@
             services.AddSingleton<AWSCognitoClientSecretHelper, AWSCognitoClientSecretHelper>();
             services.AddSingleton<JwtTokenHelper, JwtTokenHelper>();
             services.AddSingleton<FirebaseHelper, FirebaseHelper>();
+
             var serviceProvider = services.BuildServiceProvider(validateScopes: true);
             return serviceProvider;
         }

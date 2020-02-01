@@ -40,7 +40,8 @@ namespace IdentityProvider.Common.Helpers
         private async Task<string> GetIdTokenViaCustomAuthAsync(CognitoUser user,
             InitiateCustomAuthRequest initiateAuthRequest)
         {
-            var authFlowResponse = await user.StartWithCustomAuthAsync(initiateAuthRequest).ConfigureAwait(false);
+            var authFlowResponse = await user.StartWithCustomAuthAsync(initiateAuthRequest)
+                .ConfigureAwait(false);
             return authFlowResponse.AuthenticationResult.IdToken;
         }
 
@@ -63,7 +64,7 @@ namespace IdentityProvider.Common.Helpers
         /// </summary>
         /// <param name="cognitoClientSecretData">The Cognito Client Secret Data.</param>
         /// <returns>The Client Secret.</returns>
-        public async Task<string> GetClientSecretForAppClientAsync(CognitoClientSecretData cognitoClientSecretData)
+        public async Task<string> GetClientSecretForAppClientAsync(CognitoClient cognitoClientSecretData)
         {
             var request = new DescribeUserPoolClientRequest
             {
@@ -84,8 +85,8 @@ namespace IdentityProvider.Common.Helpers
             var tokenResponse = await this._httpClient.RequestClientCredentialsTokenAsync(
                 new ClientCredentialsTokenRequest
                 {
-                    ClientId = cognitoClient.Cognito.ClientId,
-                    ClientSecret = cognitoClient.Cognito.ClientSecret,
+                    ClientId = cognitoClient.Cognito.ClientApp.ClientId,
+                    ClientSecret = cognitoClient.Cognito.ClientApp.ClientSecret,
                     Address = cognitoClient.Cognito.TokenUrl,
                     Scope = cognitoClient.Cognito.ClientCredentialsAuthScope
                 }).ConfigureAwait(false);
@@ -101,13 +102,13 @@ namespace IdentityProvider.Common.Helpers
         public async Task<string> GetCustomAuthTokenAsync(Client client)
         {
             string token;
-            var userPool = new CognitoUserPool(client.ConfigClientData.Cognito.UserPoolId, 
-                client.ConfigClientData.Cognito.ClientId,
+            var userPool = new CognitoUserPool(client.ConfigClientData.Cognito.ClientApp.UserPoolId, 
+                client.ConfigClientData.Cognito.ClientApp.ClientId,
                 (AmazonCognitoIdentityProviderClient)this._amazonCognitoIdentityProvider,
-                client.ConfigClientData.Cognito.ClientSecret);
-            var user = new CognitoUser(client.ExtraClientData.UserName, client.ConfigClientData.Cognito.ClientId,
+                client.ConfigClientData.Cognito.ClientApp.ClientSecret);
+            var user = new CognitoUser(client.ExtraClientData.UserName, client.ConfigClientData.Cognito.ClientApp.ClientId,
                 userPool, (AmazonCognitoIdentityProviderClient)this._amazonCognitoIdentityProvider,
-                client.ConfigClientData.Cognito.ClientSecret);
+                client.ConfigClientData.Cognito.ClientApp.ClientSecret);
 
             var initiateAuthRequest = new InitiateCustomAuthRequest
             {
@@ -120,16 +121,16 @@ namespace IdentityProvider.Common.Helpers
                 },
                 ClientMetadata = new Dictionary<string, string>(StringComparer.Ordinal)
             };
-            if (!string.IsNullOrEmpty(client.ConfigClientData.Cognito.ClientSecret))
+            if (!string.IsNullOrEmpty(client.ConfigClientData.Cognito.ClientApp.ClientSecret))
             {
                 initiateAuthRequest.AuthParameters.Add(CognitoConstants.ChlgParamSecretHash,
-                    Util.GetUserPoolSecretHash(client.ExtraClientData.UserName, client.ConfigClientData.Cognito.ClientId,
-                        client.ConfigClientData.Cognito.ClientSecret));
+                    Util.GetUserPoolSecretHash(client.ExtraClientData.UserName, client.ConfigClientData.Cognito.ClientApp.ClientId,
+                        client.ConfigClientData.Cognito.ClientApp.ClientSecret));
             }
 
             try
             {
-                token = await GetIdTokenViaCustomAuthAsync(user, initiateAuthRequest).ConfigureAwait(false);
+                token = await GetIdTokenViaCustomAuthAsync(user, initiateAuthRequest);
             }
             catch (UserNotFoundException)
             {
@@ -137,9 +138,9 @@ namespace IdentityProvider.Common.Helpers
                 {
                     MessageAction = "SUPPRESS",
                     Username = client.ExtraClientData.UserName,
-                    UserPoolId = client.ConfigClientData.Cognito.UserPoolId
+                    UserPoolId = client.ConfigClientData.Cognito.ClientApp.UserPoolId
                 }).ConfigureAwait(false);
-                token = await GetIdTokenViaCustomAuthAsync(user, initiateAuthRequest).ConfigureAwait(false);
+                token = await GetIdTokenViaCustomAuthAsync(user, initiateAuthRequest);
             }
 
             return token;

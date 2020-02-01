@@ -13,9 +13,9 @@
     public class AWSCognitoClientSecretHelper
     {
         /// <summary>
-        /// The collection of the Cognito Client Secret Data.
+        /// The collection of the Cognito Clients.
         /// </summary>
-        private static CognitoClientSecretData[] _cognitoClientSecretDataArr;
+        private static CognitoClient[] _cognitoClients;
 
         /// <summary>
         /// The config settings
@@ -32,22 +32,22 @@
         }
 
         /// <summary>
-        /// Gets the collection of the Cognito Client Secret Data.
+        /// Gets the collection of the Cognito Clients.
         /// </summary>
-        public CognitoClientSecretData[] CognitoClientSecretDataArr
+        public CognitoClient[] CognitoClients
         {
             get
             {   //Thread-safe setting cache data
-                if (_cognitoClientSecretDataArr == null)
+                if (_cognitoClients == null)
                 {
                     var cognitoSecretsText = File.ReadAllText(Path.Combine(
                                 this._configSettings.SecretsDockerFolderPath,
                                 this._configSettings.CognitoSecretsFileName));
 
-                    _cognitoClientSecretDataArr = JsonSerializer.DeserializeFromString<CognitoClientSecretData[]>(cognitoSecretsText);
+                    _cognitoClients = JsonSerializer.DeserializeFromString<CognitoClient[]>(cognitoSecretsText);
                 }
 
-                return _cognitoClientSecretDataArr;
+                return _cognitoClients;
             }
         }
 
@@ -58,8 +58,8 @@
         /// <returns>The Client Secret</returns>
         public string GetClientSecretForCognitoClient(ConfigClientData client)
         {
-            var clientSecret = CognitoClientSecretDataArr.FirstOrDefault(x => x.UserPoolId == client.Cognito.UserPoolId &&
-                                                                              x.ClientId == client.Cognito.ClientId)?.ClientSecret;
+            var clientSecret = CognitoClients.FirstOrDefault(x => x.UserPoolId == client.Cognito.ClientApp.UserPoolId &&
+                                                                              x.ClientId == client.Cognito.ClientApp.ClientId)?.ClientSecret;
 
             return clientSecret;
         }

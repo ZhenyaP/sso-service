@@ -10,7 +10,7 @@ echo "Removing all content from the secrets Docker volume"
 COUNTER=0;
 rm -rf /run/secrets/*;
 echo "Uploading all secrets to Docker - attempt $((COUNTER+1))"
-until $(curl -d '' -X POST -v http://idp-certmanager:5000/api/Certs/Upload); 
+until $(curl -d '' -X POST -v http://idp-certmanager:5000/api/Secrets/Upload);
 do
   if [ $((++COUNTER)) -eq 10 ]; then
      break

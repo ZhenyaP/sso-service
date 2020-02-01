@@ -4,6 +4,8 @@
 //  </summary>
 //  --------------------------------------------------------------------------------------------------------------------
 
+using IdentityProvider.SecretManager.Entities.AWS;
+
 namespace IdentityProvider.SecretManager.Entities
 {
     /// <summary>
@@ -11,17 +13,7 @@ namespace IdentityProvider.SecretManager.Entities
     /// </summary>
     public class ServerCert
     {
-        /// <summary>
-        /// Gets or sets the private key.
-        /// </summary>
-        /// <value>The private key.</value>
-        public SecretData PrivateKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets the ARN.
-        /// </summary>
-        /// <value>The ARN.</value>
-        public string Arn { get; set; }
+        public ServerCertAWSConfig AWSConfig { get; set; }
 
         /// <summary>
         /// Gets or sets the Destination Cert File Name.

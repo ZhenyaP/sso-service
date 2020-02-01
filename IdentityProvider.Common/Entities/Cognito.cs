@@ -12,28 +12,18 @@ namespace IdentityProvider.Common.Entities
     public class Cognito
     {
         /// <summary>
-        /// Gets or sets the client identifier.
+        /// Gets or sets the Cognito client app.
         /// </summary>
-        /// <value>The client identifier.</value>
-        public string ClientId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the client secret.
-        /// </summary>
-        /// <value>The client secret.</value>
-        public string ClientSecret { get; set; }
-
-        /// <summary>
-        /// Gets or sets the user pool identifier.
-        /// </summary>
-        /// <value>The user pool identifier.</value>
-        public string UserPoolId { get; set; }
+        /// <value>The Cognito client app.</value>
+        public CognitoClient ClientApp { get; set; }
 
         /// <summary>
         /// Gets or sets the token URL.
         /// </summary>
         /// <value>The token URL.</value>
         public string TokenUrl { get; set; }
+
+        public string CognitoJwksUrl => $"{this.TokenIssuer}/.well-known/jwks.json";
 
         /// <summary>
         /// Gets or sets the Cognito token issuer.

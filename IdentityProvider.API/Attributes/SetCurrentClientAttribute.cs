@@ -1,4 +1,6 @@
-﻿namespace IdentityProvider.API.Attributes
+﻿using Microsoft.Extensions.Logging;
+
+namespace IdentityProvider.API.Attributes
 {
     using Common;
     using IdentityProvider.Common.Entities;
@@ -10,7 +12,6 @@
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Filters;
     using Serilog;
-
 
     /// <summary>
     /// The SetCurrentClient Attribute.
@@ -142,7 +143,7 @@
             {
                 Log.Error($"Exception in SetCurrentClientAttribute.OnActionExecuting: Message={e.Message}, StackTrace={e.StackTrace}");
                 throw;
-            }            
+            }
         }
     }
 }

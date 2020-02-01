@@ -1,4 +1,6 @@
-﻿namespace IdentityProvider.API.Entities
+﻿using IdentityProvider.Common.Entities;
+
+namespace IdentityProvider.API.Entities
 {
     using IdentityProvider.Common.Entities;
 

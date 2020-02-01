@@ -30,8 +30,8 @@ namespace IdentityProvider.Common.Helpers
             InitializeAdminSdk(serviceAccoundId);
 
             var customToken = additionalClaims == null || additionalClaims.Count == 0 ?
-                await FirebaseAuth.DefaultInstance.CreateCustomTokenAsync(uid) :
-                await FirebaseAuth.DefaultInstance.CreateCustomTokenAsync(uid, additionalClaims);
+                await FirebaseAuth.DefaultInstance.CreateCustomTokenAsync(uid).ConfigureAwait(false) :
+                await FirebaseAuth.DefaultInstance.CreateCustomTokenAsync(uid, additionalClaims).ConfigureAwait(false);
 
             return customToken;
         }

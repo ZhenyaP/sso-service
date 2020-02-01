@@ -8,8 +8,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Amazon.SecretsManager;
 using Amazon.SecretsManager.Model;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Serilog;
 
 namespace IdentityProvider.SecretManager.Helpers
 {
@@ -26,20 +26,16 @@ namespace IdentityProvider.SecretManager.Helpers
         /// <summary>
         /// The log
         /// </summary>
-        private static readonly ILogger Log = Serilog.Log.ForContext<AWSSecretsManagerHelper>();
+        private ILogger<AWSSecretsManagerHelper> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AWSSecretsManagerHelper"/> class.
         /// </summary>
-        public AWSSecretsManagerHelper(IAmazonSecretsManager amazonSecretsManager/*,
-            IOptions<ConfigSettings> configSettings*/)
+        public AWSSecretsManagerHelper(IAmazonSecretsManager amazonSecretsManager,
+            ILogger<AWSSecretsManagerHelper> logger)
         {
             this._amazonSecretsManager = amazonSecretsManager;
-            //new AmazonSecretsManagerConfig {ServiceURL = ""};
-            //MockingHelper.SetPropertyValue(_amazonSecretsManager.Config.RegionEndpoint, "RegionEndpoint", null);
-            //var serviceUrl = new UriBuilder(Uri.UriSchemeHttps, configSettings.Value.SecretsManagerVpceDnsName).Uri.AbsoluteUri;
-            //Log.Information($"AWSSecretsManagerHelper: serviceUrl={serviceUrl}");
-            //MockingHelper.SetPropertyValue(_amazonSecretsManager.Config, "ServiceURL", serviceUrl);
+            this._logger = logger;
         }
 
         /// <summary>

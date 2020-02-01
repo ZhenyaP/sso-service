@@ -5,6 +5,8 @@
 //  --------------------------------------------------------------------------------------------------------------------
 
 using IdentityProvider.Common.Entities;
+using Microsoft.Extensions.Logging;
+using Serilog;
 
 namespace IdentityProvider.API.Middlewares
 {
@@ -57,10 +59,7 @@ namespace IdentityProvider.API.Middlewares
         /// </summary>
         private readonly ConfigSettings _configSettings;
 
-        /// <summary>
-        /// The log
-        /// </summary>
-        private static readonly ILogger Log = Serilog.Log.ForContext<AsyncInitializationMiddleware>();
+        private ILogger<AsyncInitializationMiddleware> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AsyncInitializationMiddleware"/> class.
@@ -71,18 +70,22 @@ namespace IdentityProvider.API.Middlewares
         /// <param name="lifetime">The application lifetime.</param>
         /// <param name="awsCognitoHelper">The AWS Cognito Helper.</param>
         /// <param name="configSettings">The Config Settings.</param>
+        /// <param name="logger">Logger</param>
         public AsyncInitializationMiddleware(RequestDelegate next,
             IApplicationLifetime lifetime,
             AWSCognitoHelper awsCognitoHelper,
             JwtTokenHelper jwtTokenHelper,
             AWSCognitoClientSecretHelper awsCognitoClientSecretHelper,
-            IOptions<ConfigSettings> configSettings)
+            IOptions<ConfigSettings> configSettings,
+            ILogger<AsyncInitializationMiddleware> logger
+            )
         {
             this._next = next;
             this._awsCognitoHelper = awsCognitoHelper;
             this._awsCognitoClientSecretHelper = awsCognitoClientSecretHelper;
             this._configSettings = configSettings.Value;
             this._jwtTokenHelper = jwtTokenHelper;
+            this._logger = logger;
 
             // Start initialization when the app starts
             var startRegistration = default(CancellationTokenRegistration);
@@ -95,7 +98,7 @@ namespace IdentityProvider.API.Middlewares
         }
 
         /// <summary>
-        /// Calls Cognito endpoint for all clients
+        /// Calls Cognito endpoint for all clients - magic experiment
         /// (for boosting the performance of all further token requests)
         /// </summary>
         /// <returns>The Task object.</returns>
@@ -107,8 +110,8 @@ namespace IdentityProvider.API.Middlewares
             {
                 if (client.Cognito != null)
                 {
-                    client.Cognito.ClientSecret = _awsCognitoClientSecretHelper.GetClientSecretForCognitoClient(client);
-                    if (string.IsNullOrEmpty(client.Cognito.ClientSecret))
+                    client.Cognito.ClientApp.ClientSecret = _awsCognitoClientSecretHelper.GetClientSecretForCognitoClient(client);
+                    if (string.IsNullOrEmpty(client.Cognito.ClientApp.ClientSecret))
                     {
                         continue;
                     }
@@ -141,18 +144,18 @@ namespace IdentityProvider.API.Middlewares
         {
             try
             {
-                Log.Information("Initialization starting");
+                _logger.LogInformation("Initialization starting");
 
                 // Do async initialization here
-                await CallCognitoEndpointForAllClientsAsync().ConfigureAwait(false);
+                await CallCognitoEndpointForAllClientsAsync();
                 //await Task.FromResult(1);
                 LoadRsaKeyData();
 
-                Log.Information("Initialization complete");
+                _logger.LogInformation("Initialization complete");
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Initialization failed");
+                _logger.LogError(ex, "Initialization failed");
                 throw;
             }
         }
