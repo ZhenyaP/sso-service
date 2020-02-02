@@ -27,7 +27,6 @@ namespace IdentityProvider.API.Helpers
         #region Private
 
         private static object _lockRsaKeyDataObj = new object();
-        private static object _lockHmacKeyDataObj = new object();
 
         private static RsaKeyData _rsaKeyData;
         private static string _hmacKey;
@@ -202,13 +201,7 @@ namespace IdentityProvider.API.Helpers
             {
                 if (string.IsNullOrEmpty(_hmacKey))
                 {
-                    lock (_lockHmacKeyDataObj)
-                    {
-                        if (string.IsNullOrEmpty(_hmacKey))
-                        {
-                            _hmacKey = "Wf/fH3WxaGruIKSiccuYdYDC5gmzuJS4UlyEp12utoo=";
-                        }
-                    }
+                    _hmacKey = "Wf/fH3WxaGruIKSiccuYdYDC5gmzuJS4UlyEp12utoo=";
                 }
 
                 return _hmacKey;

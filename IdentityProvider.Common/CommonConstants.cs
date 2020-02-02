@@ -37,6 +37,11 @@ namespace IdentityProvider.Common
             public const string SSLClientSerial = "X-SSL-ClIENT-SERIAL";
 
             /// <summary>
+            /// The SSLClientSerial constant
+            /// </summary>
+            public const string SSLClientCert = "X-SSL-ClIENT-CERT";
+
+            /// <summary>
             /// The ForwardedFor constant
             /// </summary>
             public const string ForwardedFor = "X-Forwarded-For";
@@ -61,6 +66,8 @@ namespace IdentityProvider.Common
                 public const string SessionId = "SessionId";
                 public const string ClientIp = "clientIP";
                 public const string CognitoUserName = "cognito:username";
+                public const string Cnf = "cnf";
+                public const string X5tSha256 = "x5t#S256";
             }
         }
 

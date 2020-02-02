@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using IdentityProvider.Common.Helpers;
+using Microsoft.Extensions.Logging;
 
 namespace IdentityProvider.API.Attributes
 {
@@ -94,6 +95,10 @@ namespace IdentityProvider.API.Attributes
                 SessionId = Guid.NewGuid().ToString(),
                 ClientName = configClientData.ClientCert.SubjectCommonName
             };
+            if (context.Request.Headers.TryGetValue(CommonConstants.HttpHeaders.SSLClientCert, out var pemEncodedCert))
+            {
+                extraClientData.ClientCert = CertHelper.GetX509Certificate(pemEncodedCert);
+            }
             if (context.Request.Headers.TryGetValue(CommonConstants.HttpHeaders.ForwardedFor, out var clientIpAddress))
             {
                 extraClientData.IpAddress = clientIpAddress;

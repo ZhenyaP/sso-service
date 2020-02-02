@@ -1,10 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
+using IdentityProvider.Common.Helpers;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.X509;
 
 namespace IdentityProvider.Common.Entities
 {
     public class ExtraClientData
     {
+        public X509Certificate ClientCert { get; set; }
+
         /// <summary>
         /// Gets or sets the Client Name.
         /// </summary>
@@ -49,7 +55,8 @@ namespace IdentityProvider.Common.Entities
         {
             new Claim(CommonConstants.Token.ClaimNames.username, this.UserName),
             new Claim(CommonConstants.Token.ClaimNames.SessionId, this.SessionId),
-            new Claim(CommonConstants.Token.ClaimNames.ClientIp, this.IpAddress)
+            new Claim(CommonConstants.Token.ClaimNames.ClientIp, this.IpAddress),
+            new Claim(CommonConstants.Token.ClaimNames.Cnf, $"{{\"{CommonConstants.Token.ClaimNames.X5tSha256}\": \"{this.ClientCert.GetSha256Thumbprint()}\"}}")
         };
     }
 }
