@@ -1,4 +1,4 @@
-﻿namespace IdentityProvider.SecretManager.Entities.AWS
+﻿namespace IdentityProvider.Common.Entities
 {
     public class AWS
     {

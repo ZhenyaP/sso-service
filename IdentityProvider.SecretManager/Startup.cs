@@ -5,21 +5,17 @@
 //  --------------------------------------------------------------------------------------------------------------------
 
 using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using Amazon;
 using Amazon.ACMPCA;
-using Amazon.CertificateManager;
-using Amazon.CognitoIdentityProvider;
 using Amazon.S3;
 using Amazon.SecretsManager;
 using Amazon.SecurityToken.Model;
 using IdentityProvider.SecretManager.Entities;
-using IdentityProvider.Common;
+using IdentityProvider.Common.Entities;
 using IdentityProvider.Common.Helpers;
 using IdentityProvider.Common.Middlewares;
-using IdentityProvider.SecretManager.Entities.AWS;
 using IdentityProvider.SecretManager.Helpers;
 using IdentityProvider.SecretManager.Helpers.Interfaces;
 using Microsoft.AspNetCore.Builder;
@@ -27,13 +23,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace IdentityProvider.SecretManager
 {
     /// <summary>
     /// Class Startup.
     /// </summary>
-    public class Startup
+    public class Startup : BaseStartup
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup"/> class.
@@ -44,24 +41,7 @@ namespace IdentityProvider.SecretManager
             this.Configuration = configuration;
         }
 
-        /// <summary>
-        /// The configuration.
-        /// </summary>
-        public IConfiguration Configuration { get; }
-
         #region Private
-
-        private IConfigurationSection ConfigSettingsSection => this.Configuration.GetSection(nameof(ConfigSettings));
-
-        private RegionEndpoint GetRegionEndpoint()
-        {
-            var aws = new AWS();
-            var awsSection = this.Configuration.GetSection(nameof(AWS));
-            awsSection.Bind(aws);
-            var regionEndpoint = RegionEndpoint.GetBySystemName(aws.Region);
-
-            return regionEndpoint;
-        }
 
         private void AddS3Service(IServiceCollection services,
             RegionEndpoint regionEndpoint,
@@ -133,43 +113,6 @@ namespace IdentityProvider.SecretManager
                 });
         }
 
-        private void AddCognitoIdentityProviderService(IServiceCollection services,
-            RegionEndpoint regionEndpoint,
-            Credentials credentials)
-        {
-            services.AddSingleton<IAmazonCognitoIdentityProvider>(
-                p =>
-                {
-                    var config = new AmazonCognitoIdentityProviderConfig
-                    {
-                        RegionEndpoint = regionEndpoint
-                    };
-                    return credentials == null ?
-                    new AmazonCognitoIdentityProviderClient(config) :
-                    new AmazonCognitoIdentityProviderClient(
-                        credentials, config);
-                });
-        }
-
-        private Credentials GetCredentials()
-        {
-            Credentials credentials = null;
-            if (File.Exists(CommonConstants.AwsKeysFileName))
-            {
-                var awsKeysData = File.ReadAllLines(CommonConstants.AwsKeysFileName);
-                var accessKeyId = awsKeysData[0];
-                var secretAccessKey = awsKeysData[1];
-                var sessionToken = awsKeysData[2];
-                credentials = new Credentials(
-                    accessKeyId,
-                    secretAccessKey,
-                    sessionToken,
-                    DateTime.UtcNow.AddDays(1));
-            }
-
-            return credentials;
-        }
-
         #endregion
 
         /// <summary>
@@ -177,10 +120,10 @@ namespace IdentityProvider.SecretManager
         /// This method is used to add services to the container.
         /// </summary>
         /// <param name="services">The service collection.</param>
-        /// <returns>The service provider.</returns>
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Latest);
+            services.AddMvc(options => options.EnableEndpointRouting = false)
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
             services.AddOptions();
             services.Configure<ConfigSettings>(ConfigSettingsSection);
 
@@ -206,8 +149,6 @@ namespace IdentityProvider.SecretManager
                 MaxConnectionsPerServer = 100,
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
             }));
-
-            return services.BuildServiceProvider(true);
         }
 
         /// <summary>
@@ -216,7 +157,7 @@ namespace IdentityProvider.SecretManager
         /// </summary>
         /// <param name="app">The app</param>
         /// <param name="env">The hosting environment</param>
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseMiddleware<RequestLoggerMiddleware>();
 

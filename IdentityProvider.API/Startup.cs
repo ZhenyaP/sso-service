@@ -1,4 +1,8 @@
-﻿namespace IdentityProvider.API
+﻿using IdentityProvider.Common.Entities;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
+
+namespace IdentityProvider.API
 {
     using System;
     using System.IO;
@@ -21,12 +25,11 @@
     using Helpers;
     using Middlewares;
     using System.Reflection;
-    using Swashbuckle.AspNetCore.Swagger;
 
     /// <summary>
     /// Class Startup.
     /// </summary>
-    public class Startup
+    public class Startup : BaseStartup
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup"/> class.
@@ -38,18 +41,12 @@
         }
 
         /// <summary>
-        /// Gets the configuration.
-        /// </summary>
-        /// <value>The configuration.</value>
-        public IConfiguration Configuration { get; }
-
-        /// <summary>
         /// Configures the HTTP request pipeline.
         /// This method gets called by the runtime.
         /// </summary>
         /// <param name="app">The application.</param>
         /// <param name="env">The env.</param>
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseForwardedHeaders(new ForwardedHeadersOptions
             {
@@ -82,14 +79,14 @@
         /// This method gets called by the runtime.
         /// </summary>
         /// <param name="services">The services.</param>
-        /// <returns>IServiceProvider.</returns>
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Latest);
+            services.AddMvc(options => options.EnableEndpointRouting = false)
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new Info
+                c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
                     Title = "Identity Provider API",
@@ -97,17 +94,17 @@
                     users/authorizes clients and returns various tokens. 
                     This way this IdP federates multiple service providers 
                     (SaaS apps) and acts as the key part of the whole FIdM (Federated Identity Management) mechanism.",
-                    TermsOfService = "None",
-                    Contact = new Contact
+                    //TermsOfService = "None",
+                    Contact = new OpenApiContact
                     {
                         Name = "Eugene Petrovich",
                         Email = "zhpetrovich@yahoo.com",
-                        Url = "https://www.linkedin.com/in/yauheniy-piatrovich/"
+                        Url = new Uri("https://www.linkedin.com/in/yauheniy-piatrovich/")
                     },
-                    License = new License
+                    License = new OpenApiLicense
                     {
                         Name = "Use under LICX",
-                        Url = "https://example.com/license"
+                        Url = new Uri("https://example.com/license")
                     }
                 });
                 // Set the comments path for the Swagger JSON and UI.
@@ -118,33 +115,7 @@
             services.AddOptions();
             services.Configure<ConfigSettings>(this.Configuration.GetSection(nameof(ConfigSettings)));
             services.AddTransient<AWSCognitoHelper, AWSCognitoHelper>();
-
-            if (File.Exists(CommonConstants.AwsKeysFileName))
-            {
-                services.AddSingleton<IAmazonCognitoIdentityProvider>(
-                    p =>
-                    {
-                        var awsKeysData = File.ReadAllLines(CommonConstants.AwsKeysFileName);
-                        var accessKeyId = awsKeysData[0];
-                        var secretAccessKey = awsKeysData[1];
-                        var sessionToken = awsKeysData[2];
-                        var client = new AmazonCognitoIdentityProviderClient(
-                            new Credentials(
-                                accessKeyId,
-                                secretAccessKey,
-                                sessionToken,
-                                DateTime.UtcNow.AddDays(1)),
-                            new AmazonCognitoIdentityProviderConfig
-                            {
-                                RegionEndpoint = RegionEndpoint.USEast1
-                            });
-                        return client;
-                    });
-            }
-            else
-            {
-                services.AddAWSService<IAmazonCognitoIdentityProvider>(ServiceLifetime.Transient);
-            }
+            AddCognitoIdentityProviderService(services, GetRegionEndpoint(), GetCredentials());
 
             services.AddSingleton(
                 p =>
@@ -164,9 +135,6 @@
             services.AddSingleton<AWSCognitoClientSecretHelper, AWSCognitoClientSecretHelper>();
             services.AddSingleton<JwtTokenHelper, JwtTokenHelper>();
             services.AddSingleton<FirebaseHelper, FirebaseHelper>();
-
-            var serviceProvider = services.BuildServiceProvider(validateScopes: true);
-            return serviceProvider;
         }
     }
 }
