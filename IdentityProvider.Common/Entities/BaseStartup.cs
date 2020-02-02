@@ -15,7 +15,7 @@ namespace IdentityProvider.Common.Entities
         /// </summary>
         public IConfiguration Configuration { get; set; }
 
-        public IConfigurationSection ConfigSettingsSection => this.Configuration.GetSection(nameof(ConfigSettings));
+        public IConfigurationSection ConfigSettingsSection => this.Configuration.GetSection("ConfigSettings");
 
         public RegionEndpoint GetRegionEndpoint()
         {

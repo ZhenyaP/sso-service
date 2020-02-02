@@ -5,6 +5,7 @@
 //  --------------------------------------------------------------------------------------------------------------------
 
 using IdentityProvider.Common.Entities;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
 
@@ -72,7 +73,7 @@ namespace IdentityProvider.API.Middlewares
         /// <param name="configSettings">The Config Settings.</param>
         /// <param name="logger">Logger</param>
         public AsyncInitializationMiddleware(RequestDelegate next,
-            IApplicationLifetime lifetime,
+            IHostApplicationLifetime lifetime,
             AWSCognitoHelper awsCognitoHelper,
             JwtTokenHelper jwtTokenHelper,
             AWSCognitoClientSecretHelper awsCognitoClientSecretHelper,
