@@ -7,7 +7,6 @@
 using IdentityProvider.Common.Entities;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace IdentityProvider.API.Middlewares
 {
@@ -15,15 +14,12 @@ namespace IdentityProvider.API.Middlewares
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Options;
 
     using Entities;
     using Helpers;
     using IdentityProvider.Common.Helpers;
-
-    using ILogger = Serilog.ILogger;
 
     /// <summary>
     /// The Async Initialization Middleware.
