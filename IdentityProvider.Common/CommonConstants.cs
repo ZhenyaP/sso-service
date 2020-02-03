@@ -24,22 +24,22 @@ namespace IdentityProvider.Common
             /// <summary>
             /// The SSLClientSDN constant
             /// </summary>
-            public const string SSLClientSDN = "X-SSL-ClIENT-S-DN";
+            public const string SSLClientSDN = "X-SSL-CLIENT-S-DN";
 
             /// <summary>
             /// The SSLClientIDN constant
             /// </summary>
-            public const string SSLClientIDN = "X-SSL-ClIENT-I-DN";
+            public const string SSLClientIDN = "X-SSL-CLIENT-I-DN";
 
             /// <summary>
             /// The SSLClientSerial constant
             /// </summary>
-            public const string SSLClientSerial = "X-SSL-ClIENT-SERIAL";
+            public const string SSLClientSerial = "X-SSL-CLIENT-SERIAL";
 
             /// <summary>
             /// The SSLClientSerial constant
             /// </summary>
-            public const string SSLClientCert = "X-SSL-ClIENT-CERT";
+            public const string SSLClientCert = "X-SSL-CLIENT-CERT";
 
             /// <summary>
             /// The ForwardedFor constant
