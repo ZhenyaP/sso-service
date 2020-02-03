@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
 using IdentityProvider.Common.Helpers;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.X509;
 
 namespace IdentityProvider.Common.Entities

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using IdentityProvider.Common.Entities;
 using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.OpenSsl;
@@ -107,8 +108,7 @@ namespace IdentityProvider.Common.Helpers
                 var pemObject = pemReader.ReadPemObject();
                 if (pemObject.GetType().ToString().EndsWithIgnoreCase("CERTIFICATE"))
                 {
-                    var certStructure =
-                        Org.BouncyCastle.Asn1.X509.X509CertificateStructure.GetInstance(pemObject.Content);
+                    var certStructure = X509CertificateStructure.GetInstance(pemObject.Content);
                     return new X509Certificate(certStructure);
                 }
 
