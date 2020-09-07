@@ -23,4 +23,4 @@ https://github.com/ZhenyaP/sso-service-caller \
 This is a .NET Core 2 Console application with an example how we can call Identity Provider microservice from .NET
 
 Here is the link to the high-level architectural diagram of the FIdHP system:
-https://app.diagrams.net/#G1d6JfiGAv8L3lrxaKoaWNE0_0kdYwsRow
+https://drive.google.com/file/d/1d6JfiGAv8L3lrxaKoaWNE0_0kdYwsRow/view?usp=sharing
